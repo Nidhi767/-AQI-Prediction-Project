@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AQI Prediction System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), 
+                        url('https://images.unsplash.com/photo-1449824913935-59a10b8d2000?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80') center/cover;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+        }
+        .container {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            padding: 20px;
+            max-width: 520px;
+            width: 100%;
+            max-height: 90vh;
+            overflow: hidden;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .header h1 {
+            font-size: 1.6em;
+            background: linear-gradient(45deg, #4CAF50, #2196F3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 3px;
+        }
+        .header p { color: #666; font-size: 0.85em; }
+        
+        .form-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 4px;
+            color: #444;
+            font-weight: 600;
+            font-size: 0.8em;
+        }
+        input {
+            width: 100%;
+            padding: 7px 10px;
+            border: 2px solid #e0e6ed;
+            border-radius: 6px;
+            font-size: 0.85em;
+            transition: all 0.3s ease;
+            background: #fafbfc;
+        }
+        input:focus {
+            outline: none;
+            border-color: #2196F3;
+            background: white;
+            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+        }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .pollutants-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr 1fr; 
+            gap: 6px; 
+            margin: 8px 0; 
+        }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 5px;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+        
+        .result {
+            margin-top: 12px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid #dee2e6;
+            animation: slideIn 0.4s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .aqi-value {
+            font-size: 2.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+            background: linear-gradient(45deg, #2196F3, #4CAF50);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .category {
+            font-size: 1em;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin: 8px 0;
+            display: inline-block;
+        }
+        .good { background: #d4edda; color: #155724; border: 2px solid #c3e6cb; }
+        .satisfactory { background: #fff3cd; color: #856404; border: 2px solid #ffeaa7; }
+        .moderate, .moderate-to-poor { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .poor, .very-poor { background: #f5c6cb; color: #721c24; border: 2px solid #f1b0b7; }
+        .severe { background: #dc3545; color: white; border: 2px solid #c82333; }
+        .error { background: #f8d7da; color: #721c24; }
+        
+        .status {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-top: 8px;
+            font-size: 0.75em;
+        }
+        .status-item {
+            background: rgba(255,255,255,0.8);
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .row, .pollutants-grid { grid-template-columns: 1fr; }
+            .container { padding: 18px; margin: 5px; }
+            .header h1 { font-size: 1.4em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-smog"></i> AQI Predictor</h1>
+            <p>Real-time Air Quality Forecast</p>
+        </div>
+        
+        <form method="POST">
+            <div class="row">
+                <div class="form-group">
+                    <label><i class="fas fa-city"></i> City</label>
+                    <input type="text" name="City" required placeholder="Delhi">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-globe"></i> Lat</label>
+                    <input type="number" step="any" name="Latitude" required placeholder="28.61">
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="form-group">
+                    <label>Long</label>
+                    <input type="number" step="any" name="Longitude" required placeholder="77.20">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-clock"></i> Hour</label>
+                    <input type="number" min="0" max="23" name="Hour" required placeholder="18">
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="form-group">
+                    <label><i class="fas fa-calendar"></i> Month</label>
+                    <input type="number" min="1" max="12" name="Month" required placeholder="5">
+                </div>
+                <div class="form-group">
+                    <label>Day</label>
+                    <input type="number" min="1" max="31" name="Day" required placeholder="4">
+                </div>
+            </div>
+            
+            <div class="pollutants-grid">
+                <div class="form-group"><label>PM2.5</label><input type="number" step="0.1" name="PM2_5" required placeholder="88"></div>
+                <div class="form-group"><label>PM10</label><input type="number" step="0.1" name="PM10" required placeholder="71"></div>
+                <div class="form-group"><label>NO2</label><input type="number" step="0.1" name="NO2" required placeholder="4.6"></div>
+                <div class="form-group"><label>SO2</label><input type="number" step="0.1" name="SO2" required placeholder="2.4"></div>
+                <div class="form-group"><label>CO</label><input type="number" step="0.1" name="CO" required placeholder="6.5"></div>
+                <div class="form-group"><label>O3</label><input type="number" step="0.1" name="O3" required placeholder="26.3"></div>
+            </div>
+            
+            <button type="submit" class="btn">
+                <i class="fas fa-bolt"></i> Predict AQI Now
+            </button>
+        </form>
+        
+        {% if prediction is not none %}
+        <div class="result">
+            <div class="aqi-value">{{ prediction }}</div>
+            <div class="category {{ category.lower().replace(' ', '-').replace('/', '-to-') }}">
+                {{ category }}
+            </div>
+            <div class="status">
+                <div class="status-item"><i class="fas fa-brain"></i> Stacking ML</div>
+                <div class="status-item"><i class="fas fa-shield-alt"></i> Production</div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
