@@ -81,6 +81,8 @@ Go to:
 Enter city, pollutant values, latitude/longitude and time → click **Predict AQI** to see predicted value and category.
 
 ## 📸 Screenshots
+![AQI Predictor UI](Screenshot%202025-12-09%20214220.png)
+![Training Output](Screenshot%202025-12-09%20215222.png)
 
 ## ✨ Future Improvements
 
